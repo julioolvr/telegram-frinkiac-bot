@@ -69,11 +69,23 @@ export default class {
 
         let ids = updates.map(update => update.update_id);
         this.lastOffset = Math.max(...ids);
-        return updates.map(update => update.message);
+        return updates;
       })
       .catch(error => {
         console.error(`Error while trying to get updates: ${error}`);
         return [];
       });
+  }
+
+  answerInlineQuery(queryId, results) {
+    console.log(`TelegramClient#answerInlineQuery, id: ${queryId}`);
+    return rp.post(`${this.baseUrl}/answerInlineQuery`, {
+      json: true,
+      body: {
+        inline_query_id: queryId,
+        results: results,
+        cache_time: 0
+      }
+    }).catch(error => console.log(error));
   }
 }
