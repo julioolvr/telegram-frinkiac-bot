@@ -13,9 +13,7 @@
   "dependencies": {
     "babel": "^5.8.5",
     "dotenv": "^1.2.0",
-    "got": "^6.1.1",
-    "request": "^2.69.0",
-    "request-promise": "^2.0.0"
+    "got": "^6.1.1"
   },
   "devDependencies": {
     "eslint": "^0.24.1",

@@ -1,4 +1,3 @@
-import rp from 'request-promise';
 import got from 'got';
 
 /**
@@ -20,31 +19,7 @@ export default class {
    * @return {Promise}       A promise for the request to Telegram's API.
    */
   sendText(text, chatId) {
-    return rp.post(`${this.baseUrl}/sendMessage`, { form: { text: text, chat_id: chatId } });
-  }
-
-  getFile(fileId) {
-    console.log(`TelegramClient#getFile, url: ${this.baseUrl}/getFile`);
-    return rp.get(`${this.baseUrl}/getFile`, { qs: { file_id: fileId } })
-      .then(response => JSON.parse(response).result)
-      .then(fileData => {
-        console.log(`TelegramClient#getFile, streaming, url: https://api.telegram.org/file/bot${this.token}/${fileData.file_path}`);
-        return got.stream(`https://api.telegram.org/file/bot${this.token}/${fileData.file_path}`);
-      });
-  }
-
-  sendFile(file, chatId) {
-    console.log(`TelegramClient#sendFile, url: ${this.baseUrl}/sendDocument`);
-    return rp.post(`${this.baseUrl}/sendDocument`, { formData: {
-      chat_id: chatId,
-      document: {
-        value: file,
-        options: {
-          contentType: 'image/png',
-          filename: 'sticker.png'
-        }
-      }
-    } });
+    return got.post(`${this.baseUrl}/sendMessage`, { body: { text: text, chat_id: chatId } });
   }
 
   /**
@@ -60,8 +35,10 @@ export default class {
     }
 
     console.log(`TelegramClient#getUpdates, offset: ${options.offset}, url: ${this.baseUrl}/getUpdates`);
-    return rp.get({url: `${this.baseUrl}/getUpdates`, qs: options})
-      .then(response => JSON.parse(response).result)
+    return got.get(`${this.baseUrl}/getUpdates`, { query: options })
+      // .then(response => { console.log(response); response })
+      // .then(response => JSON.parse(response).result)
+      .then(response => JSON.parse(response.body).result)
       .then(updates => {
         if (updates.length === 0) {
           return [];
@@ -77,14 +54,22 @@ export default class {
       });
   }
 
+  /**
+   * Responds to an inline query made to the bot.
+   * @param  {number} queryId Id of the inline query being answered.
+   * @param  {array}  results An array of `InlineQueryResult`s supported by Telegram: https://core.telegram.org/bots/api#inlinequeryresult
+   * @return {Promise}        A promise for the response from the API.
+   */
   answerInlineQuery(queryId, results) {
     console.log(`TelegramClient#answerInlineQuery, id: ${queryId}`);
-    return rp.post(`${this.baseUrl}/answerInlineQuery`, {
-      json: true,
-      body: {
+    return got.post(`${this.baseUrl}/answerInlineQuery`, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
         inline_query_id: queryId,
         results: results
-      }
+      })
     }).catch(error => console.log(error));
   }
 }
