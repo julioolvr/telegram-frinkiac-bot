@@ -2,7 +2,7 @@ import got from 'got';
 
 export default class {
   constructor() {
-    this.baseUrl = 'http://frinkiac.com';
+    this.baseUrl = 'https://frinkiac.com';
   }
 
   search(query) {
