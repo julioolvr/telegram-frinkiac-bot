@@ -83,8 +83,7 @@ export default class {
       json: true,
       body: {
         inline_query_id: queryId,
-        results: results,
-        cache_time: 0
+        results: results
       }
     }).catch(error => console.log(error));
   }

@@ -33,12 +33,12 @@ export default class {
       }
     } else if (update.inline_query) {
       frinkiacApi.search(update.inline_query.query).then(results => {
-        return results.map(url => {
+        return results.map(result => {
           return {
             type: 'photo',
             id: guid(),
-            photo_url: url,
-            thumb_url: url // TODO: Maybe we can get thumbnails?
+            photo_url: result.full,
+            thumb_url: result.thumbnail
           };
         });
       }).then(queryResults => {
