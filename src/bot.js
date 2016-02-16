@@ -2,6 +2,8 @@ import TelegramClient from './services/telegramClient';
 import FrinkiacApi from './services/frinkiacApi';
 
 const frinkiacApi = new FrinkiacApi();
+const SCREENSHOT_HEIGHT = 480;
+const SCREENSHOT_WIDTH = 640;
 
 // From http://stackoverflow.com/a/105074, just something to test for the time being.
 function guid() {
@@ -38,7 +40,9 @@ export default class {
             type: 'photo',
             id: guid(),
             photo_url: result.full,
-            thumb_url: result.thumbnail
+            thumb_url: result.thumbnail,
+            photo_width: SCREENSHOT_WIDTH,
+            photo_height: SCREENSHOT_HEIGHT
           };
         });
       }).then(queryResults => {
