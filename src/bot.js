@@ -27,7 +27,9 @@ export default class {
       let message = update.message;
 
       if (message.text && message.text.startsWith('/start')) {
-        this.client.sendText('oh hi', message.chat.id);
+        const startMessage = 'Type your query to search a Simpson screenshot on frinkiac.com.';
+
+        this.client.sendText(startMessage, message.chat.id);
       }
     } else if (update.inline_query) {
       frinkiacApi.search(update.inline_query.query).then(results => {
