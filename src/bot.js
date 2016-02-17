@@ -43,7 +43,11 @@ export default class {
         const helpMessage = 'This is an inline bot. This means that you can use it on any chat, private or group, without ' +
                             'inviting it. Just type "@FrinkiacSearchBot <your search>" and wait. The bot will show you some ' +
                             'screenshots matching your query, and you can select one of them. Try it here! Just make sure to ' +
-                            'add "@FrinkiacSearchBot" at the beginning of your message.'
+                            'add "@FrinkiacSearchBot" at the beginning of your message.\n\n' +
+                            'You can generate "meme" images by adding your own subtitle to the image. To do this, write your ' +
+                            'search query, and the text you want separated by a slash (/). For instance, "@FrinkiacSearchBot ' +
+                            'drugs lisa / give me the drugs, lisa" and then pick one of the thumbnails. The image will be ' +
+                            'generated with your text.'
 
         this.client.sendText(helpMessage, message.chat.id);
       }
