@@ -29,7 +29,8 @@ export default class {
       let message = update.message;
 
       if (message.text && message.text.startsWith('/start')) {
-        const startMessage = 'Type your query to search a Simpson screenshot on frinkiac.com.';
+        const startMessage = 'Use this bot inline to search a Simpson screenshot on frinkiac.com.\n' +
+                             'For example: @FrinkiacSearchBot d\'oh';
 
         this.client.sendText(startMessage, message.chat.id);
       }
