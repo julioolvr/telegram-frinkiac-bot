@@ -48,13 +48,23 @@ export default class {
         this.client.sendText(helpMessage, message.chat.id);
       }
     } else if (update.inline_query) {
-      frinkiacApi.search(update.inline_query.query).then(results => {
+      if (!update.inline_query.query) {
+        return;
+      }
+
+      let queryParts = update.inline_query.query.split('/').map(s => s.trim());
+      let query = queryParts[0];
+      let caption = queryParts[1];
+
+      frinkiacApi.search(query).then(results => {
         return results.map(result => {
+          let photoUrl = caption ? frinkiacApi.memeUrlFor(result, caption) : frinkiacApi.urlFor(result);
+
           return {
             type: 'photo',
             id: guid(),
-            photo_url: result.full,
-            thumb_url: result.thumbnail,
+            photo_url: photoUrl,
+            thumb_url: frinkiacApi.thumbnailUrlFor(result),
             photo_width: SCREENSHOT_WIDTH,
             photo_height: SCREENSHOT_HEIGHT
           };

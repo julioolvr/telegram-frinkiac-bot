@@ -8,15 +8,11 @@ export default class {
   search(query) {
     return got(`${this.baseUrl}/api/search?q=${encodeURIComponent(query)}`)
       .then(response => response.body)
-      .then(JSON.parse)
-      .then(results => {
-        return results.map(result => {
-          return {
-            full: this.urlFor(result),
-            thumbnail: this.thumbnailUrlFor(result)
-          };
-        });
-      });
+      .then(JSON.parse);
+  }
+
+  memeUrlFor(result, caption) {
+    return `${this.baseUrl}/meme/${result.Episode}/${result.Timestamp}.jpg?lines=${encodeURIComponent(caption)}`;
   }
 
   urlFor(result) {
