@@ -36,8 +36,6 @@ export default class {
 
     console.log(`TelegramClient#getUpdates, offset: ${options.offset}, url: ${this.baseUrl}/getUpdates`);
     return got.get(`${this.baseUrl}/getUpdates`, { query: options })
-      // .then(response => { console.log(response); response })
-      // .then(response => JSON.parse(response).result)
       .then(response => JSON.parse(response.body).result)
       .then(updates => {
         if (updates.length === 0) {
