@@ -4,6 +4,7 @@ import FrinkiacApi from './services/frinkiacApi';
 const frinkiacApi = new FrinkiacApi();
 const SCREENSHOT_HEIGHT = 480;
 const SCREENSHOT_WIDTH = 640;
+const EM_WIDTH = 15; // Amount of M letters that fit in a single line.
 
 // From http://stackoverflow.com/a/105074, just something to test for the time being.
 function guid() {
@@ -14,6 +15,35 @@ function guid() {
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
     s4() + '-' + s4() + s4() + s4();
+}
+
+/**
+ * Splits the caption in case it's needed and the user didn't split it manually.
+ * @param  {string} caption The caption as provided by the user.
+ * @return {string}         The caption splitted into several lines.
+ */
+function processCaption(caption) {
+  if (caption.includes('\n')) {
+    // The user separated the caption into several lines on purpose, let's respect that.
+    return caption;
+  }
+
+  let words = caption.split(' ').filter(s => s);
+  let lines = [[]];
+  let currentLine = 0;
+
+  words.forEach(word => {
+    let currentLineLength = lines[currentLine].reduce((acc, w) => acc + w.length, 0);
+
+    if (currentLineLength + word.length > EM_WIDTH) { // Ignoring spaces on purpose - they shouldn't matter unless in a line full of M's
+      currentLine++;
+      lines[currentLine] = [word];
+    } else {
+      lines[currentLine].push(word);
+    }
+  });
+
+  return lines.map(line => line.join(' ')).join('\n');
 }
 
 /**
@@ -47,7 +77,7 @@ export default class {
                             'You can generate "meme" images by adding your own subtitle to the image. To do this, write your ' +
                             'search query, and the text you want separated by a slash (/). For instance, "@FrinkiacSearchBot ' +
                             'drugs lisa / give me the drugs, lisa" and then pick one of the thumbnails. The image will be ' +
-                            'generated with your text.'
+                            'generated with your text.';
 
         this.client.sendText(helpMessage, message.chat.id);
       }
@@ -62,7 +92,7 @@ export default class {
 
       frinkiacApi.search(query).then(results => {
         return results.map(result => {
-          let photoUrl = caption ? frinkiacApi.memeUrlFor(result, caption) : frinkiacApi.urlFor(result);
+          let photoUrl = caption ? frinkiacApi.memeUrlFor(result, processCaption(caption)) : frinkiacApi.urlFor(result);
 
           return {
             type: 'photo',
@@ -74,7 +104,7 @@ export default class {
           };
         });
       }).then(queryResults => {
-        return this.client.answerInlineQuery(update.inline_query.id, queryResults)
+        return this.client.answerInlineQuery(update.inline_query.id, queryResults);
       });
     }
   }
