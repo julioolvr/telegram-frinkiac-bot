@@ -28,11 +28,24 @@ export default class {
     if (update.message) {
       let message = update.message;
 
-      if (message.text && message.text.startsWith('/start')) {
+      if (!message.text) {
+        return;
+      }
+
+      if (message.text.startsWith('/start')) {
         const startMessage = 'Use this bot inline to search a Simpson screenshot on frinkiac.com.\n' +
                              'For example: @FrinkiacSearchBot d\'oh';
 
         this.client.sendText(startMessage, message.chat.id);
+      }
+
+      if (message.text.startsWith('/help')) {
+        const helpMessage = 'This is an inline bot. This means that you can use it on any chat, private or group, without ' +
+                            'inviting it. Just type "@FrinkiacSearchBot <your search>" and wait. The bot will show you some ' +
+                            'screenshots matching your query, and you can select one of them. Try it here! Just make sure to ' +
+                            'add "@FrinkiacSearchBot" at the beginning of your message.'
+
+        this.client.sendText(helpMessage, message.chat.id);
       }
     } else if (update.inline_query) {
       frinkiacApi.search(update.inline_query.query).then(results => {
