@@ -12,6 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "babel": "^5.8.5",
+    "bluebird": "^3.3.5",
+    "btoa": "^1.1.2",
     "dotenv": "^1.2.0",
     "got": "^6.1.1"
   },

@@ -68,6 +68,6 @@ export default class {
         inline_query_id: queryId,
         results: results
       })
-    }).catch(error => console.log(error));
+    }).catch(error => console.log('Error answering inline query', error.response.body));
   }
 }

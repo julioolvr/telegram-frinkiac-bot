@@ -1,9 +1,13 @@
 import TelegramClient from './services/telegramClient';
 import FrinkiacApi from './services/frinkiacApi';
+import Bluebird from 'bluebird';
 
 const frinkiacApi = new FrinkiacApi();
 const SCREENSHOT_HEIGHT = 480;
 const SCREENSHOT_WIDTH = 640;
+const GIF_WIDTH = 480;
+const GIF_HEIGHT = 360;
+const MAX_RESULTS = 50;
 const EM_WIDTH = 15; // Amount of M letters that fit in a single line.
 
 // From http://stackoverflow.com/a/105074, just something to test for the time being.
@@ -62,56 +66,90 @@ export default class {
     }
   }
 
-   respondToMessage(message) {
-     if (!message.text) {
-       return;
-     }
+  respondToMessage(message) {
+    if (!message.text) {
+      return;
+    }
 
-     if (message.text.startsWith('/start')) {
-       const startMessage = 'Use this bot inline to search a Simpson screenshot on frinkiac.com.\n' +
-                            'For example: @FrinkiacSearchBot d\'oh';
+    if (message.text.startsWith('/start')) {
+      const startMessage = 'Use this bot inline to search a Simpson screenshot on frinkiac.com.\n' +
+                          'For example: @FrinkiacSearchBot d\'oh';
 
-       this.client.sendText(startMessage, message.chat.id);
-     }
+      this.client.sendText(startMessage, message.chat.id);
+    }
 
-     if (message.text.startsWith('/help')) {
-       const helpMessage = 'This is an inline bot. This means that you can use it on any chat, private or group, without ' +
-                           'inviting it. Just type "@FrinkiacSearchBot <your search>" and wait. The bot will show you some ' +
-                           'screenshots matching your query, and you can select one of them. Try it here! Just make sure to ' +
-                           'add "@FrinkiacSearchBot" at the beginning of your message.\n\n' +
-                           'You can generate "meme" images by adding your own subtitle to the image. To do this, write your ' +
-                           'search query, and the text you want separated by a slash (/). For instance, "@FrinkiacSearchBot ' +
-                           'drugs lisa / give me the drugs, lisa" and then pick one of the thumbnails. The image will be ' +
-                           'generated with your text.';
+    if (message.text.startsWith('/help')) {
+      const helpMessage = 'This is an inline bot. This means that you can use it on any chat, private or group, without ' +
+                          'inviting it. Just type "@FrinkiacSearchBot <your search>" and wait. The bot will show you some ' +
+                          'screenshots matching your query, and you can select one of them. Try it here! Just make sure to ' +
+                          'add "@FrinkiacSearchBot" at the beginning of your message.\n\n' +
+                          'You can generate "meme" images by adding your own subtitle to the image. To do this, write your ' +
+                          'search query, and the text you want separated by a slash (/). For instance, "@FrinkiacSearchBot ' +
+                          'drugs lisa / give me the drugs, lisa" and then pick one of the thumbnails. The image will be ' +
+                          'generated with your text.';
 
-       this.client.sendText(helpMessage, message.chat.id);
-     }
-   }
+      this.client.sendText(helpMessage, message.chat.id);
+    }
+  }
 
-   respondToInlineQuery(inlineQuery) {
-     if (!inlineQuery.query) {
-       return;
-     }
+  respondToInlineQuery(inlineQuery) {
+    if (!inlineQuery.query) {
+      return;
+    }
 
-     let queryParts = inlineQuery.query.split('/').map(s => s.trim());
-     let query = queryParts[0];
-     let caption = queryParts[1];
+    let queryParts = inlineQuery.query.split('/').map(s => s.trim());
+    let query = queryParts[0];
+    let caption = queryParts[1];
+    let response;
 
-     frinkiacApi.search(query).then(results => {
-       return results.map(result => {
-         let photoUrl = caption ? frinkiacApi.memeUrlFor(result, processCaption(caption)) : frinkiacApi.urlFor(result);
+    if (query.startsWith('gif ')) {
+      response = this.respondWithGif(query.replace(/^gif/, '').trim(), caption);
+    } else {
+      response = this.respondWithImage(query, caption);
+    }
 
-         return {
-           type: 'photo',
-           id: guid(),
-           photo_url: photoUrl,
-           thumb_url: frinkiacApi.thumbnailUrlFor(result),
-           photo_width: SCREENSHOT_WIDTH,
-           photo_height: SCREENSHOT_HEIGHT
-         };
-       });
-     }).then(queryResults => {
-       return this.client.answerInlineQuery(inlineQuery.id, queryResults);
-     });
-   }
+    response.then(queryResults => {
+      return this.client.answerInlineQuery(inlineQuery.id, queryResults.slice(0, MAX_RESULTS));
+    });
+  }
+
+  respondWithImage(query, caption) {
+    return frinkiacApi.search(query).then(results => {
+      return results.map(result => {
+        let photoUrl = caption ? frinkiacApi.memeUrlFor(result, processCaption(caption)) : frinkiacApi.urlFor(result);
+
+        return {
+          type: 'photo',
+          id: guid(),
+          photo_url: photoUrl,
+          thumb_url: frinkiacApi.thumbnailUrlFor(result),
+          photo_width: SCREENSHOT_WIDTH,
+          photo_height: SCREENSHOT_HEIGHT
+        };
+      });
+    });
+  }
+
+  respondWithGif(query, caption) {
+    return frinkiacApi.search(query).then(results => {
+      let promises = results.map(result => {
+        return frinkiacApi.gifUrlsFor(result, caption);
+      });
+
+      return Bluebird.all(promises);
+    }).then(groupedGifUrls => {
+      return [... new Set(groupedGifUrls.reduce((a, b) => a.concat(b), []))];
+    }).then(gifUrls => {
+      return gifUrls.map(gifUrl => {
+        return {
+          type: 'gif',
+          id: guid(), // TODO: Figure out real guid
+          gif_url: gifUrl,
+          thumb_url: gifUrl, // TODO: Consider using a JPG (definitely, or I'll kill Frinkiac and it'll be slow)
+          gif_width: GIF_WIDTH,
+          gif_height: GIF_HEIGHT
+        };
+      });
+    }).catch(error => console.error('Error responding with gif', error));
+  }
 }
