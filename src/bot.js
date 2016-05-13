@@ -83,7 +83,9 @@ export default class {
                           'You can generate "meme" images by adding your own subtitle to the image. To do this, write your ' +
                           'search query, and the text you want separated by a slash (/). For instance, "@FrinkiacSearchBot ' +
                           'drugs lisa / give me the drugs, lisa" and then pick one of the thumbnails. The image will be ' +
-                          'generated with your text.';
+                          'generated with your text.\n\n' +
+                          'You can send gifs by adding "gif" as the first word of your query. After that use it as always, ' +
+                          'you can even add a caption for the gif. For instance "@FrinkiacSearchBot gif drugs lisa"';
 
       this.client.sendText(helpMessage, message.chat.id);
     }
