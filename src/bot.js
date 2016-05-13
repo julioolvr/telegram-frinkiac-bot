@@ -10,15 +10,12 @@ const GIF_HEIGHT = 360;
 const MAX_RESULTS = 50;
 const EM_WIDTH = 15; // Amount of M letters that fit in a single line.
 
-// From http://stackoverflow.com/a/105074, just something to test for the time being.
-function guid() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
-  }
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-    s4() + '-' + s4() + s4() + s4();
+function photoId(photoResult) {
+  return [photoResult.Episode, photoResult.Timestamp].join('-');
+}
+
+function gifId(gifResult) {
+  return [gifResult.Episode, gifResult.StartTimestamp, gifResult.EndTimestamp].join('-');
 }
 
 /**
@@ -26,7 +23,7 @@ function guid() {
  * @param  {string} caption The caption as provided by the user.
  * @return {string}         The caption splitted into several lines.
  */
-function processCaption(caption) {
+function splitCaption(caption) {
   if (caption.includes('\n')) {
     // The user separated the caption into several lines on purpose, let's respect that.
     return caption;
@@ -116,11 +113,11 @@ export default class {
   respondWithImage(query, caption) {
     return frinkiacApi.search(query).then(results => {
       return results.map(result => {
-        let photoUrl = caption ? frinkiacApi.memeUrlFor(result, processCaption(caption)) : frinkiacApi.urlFor(result);
+        let photoUrl = caption ? frinkiacApi.memeUrlFor(result, splitCaption(caption)) : frinkiacApi.urlFor(result);
 
         return {
           type: 'photo',
-          id: guid(),
+          id: photoId(result),
           photo_url: photoUrl,
           thumb_url: frinkiacApi.thumbnailUrlFor(result),
           photo_width: SCREENSHOT_WIDTH,
@@ -131,21 +128,13 @@ export default class {
   }
 
   respondWithGif(query, caption) {
-    return frinkiacApi.search(query).then(results => {
-      let promises = results.map(result => {
-        return frinkiacApi.gifUrlsFor(result, caption);
-      });
-
-      return Bluebird.all(promises);
-    }).then(groupedGifUrls => {
-      return [... new Set(groupedGifUrls.reduce((a, b) => a.concat(b), []))];
-    }).then(gifUrls => {
-      return gifUrls.map(gifUrl => {
+    return frinkiacApi.searchScenes(query).then(scenes => {
+      return scenes.map(scene => {
         return {
           type: 'gif',
-          id: guid(), // TODO: Figure out real guid
-          gif_url: gifUrl,
-          thumb_url: gifUrl, // TODO: Consider using a JPG (definitely, or I'll kill Frinkiac and it'll be slow)
+          id: gifId(scene),
+          gif_url: frinkiacApi.gifUrlFor(scene, caption),
+          thumb_url: frinkiacApi.thumbnailUrlFor({ Episode: scene.Episode, Timestamp: scene.RepresentativeTimestamp }),
           gif_width: GIF_WIDTH,
           gif_height: GIF_HEIGHT
         };

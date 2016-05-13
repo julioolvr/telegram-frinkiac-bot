@@ -1,5 +1,7 @@
 import got from 'got';
 import btoa from 'btoa';
+import Bluebird from 'bluebird';
+import _ from 'lodash';
 
 export default class {
   constructor() {
@@ -17,6 +19,16 @@ export default class {
     return this.requestUrl(`${this.baseUrl}/api/search?q=${encodeURIComponent(query)}`);
   }
 
+  searchScenes(query) {
+    return this.search(query)
+      .then(results => results.map(result => this.requestUrl(`${this.baseUrl}/api/caption?e=${result.Episode}&t=${result.Timestamp}`)))
+      .then(Bluebird.all)
+      .then(responses => responses.map(response => response.Subtitles))
+      .then(_.flatten)
+      .then(scenes => _.uniqBy(scenes, 'Id'));
+
+  }
+
   memeUrlFor(result, caption) {
     return `${this.baseUrl}/meme/${result.Episode}/${result.Timestamp}.jpg?lines=${encodeURIComponent(caption)}`;
   }
@@ -29,18 +41,13 @@ export default class {
     return `${this.baseUrl}/img/${result.Episode}/${result.Timestamp}/small.jpg`;
   }
 
-  gifUrlsFor(result, caption) {
-    // TODO: result could have been already queried by a previous result, how do I avoid querying again?
-    return this.requestUrl(`${this.baseUrl}/api/caption?e=${result.Episode}&t=${result.Timestamp}`)
-      .then(response => response.Subtitles)
-      .then(subtitles => subtitles.map(subtitle => {
-        let url = `${this.baseUrl}/gif/${result.Episode}/${subtitle.StartTimestamp}/${subtitle.EndTimestamp}.gif`;
+  gifUrlFor(scene, caption) {
+    let url = `${this.baseUrl}/gif/${scene.Episode}/${scene.StartTimestamp}/${scene.EndTimestamp}.gif`;
 
-        if (caption) {
-          url = `${url}?b64lines=${btoa(caption)}`;
-        }
+    if (caption) {
+      url = `${url}?b64lines=${btoa(caption)}`;
+    }
 
-        return url;
-      }));
+    return url;
   }
 }
