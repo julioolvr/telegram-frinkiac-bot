@@ -98,7 +98,7 @@ export default class {
 
     let queryParts = inlineQuery.query.split('/').map(s => s.trim());
     let query = queryParts[0];
-    let caption = queryParts[1];
+    let caption = splitCaption(queryParts[1]);
     let response;
 
     if (query.startsWith('gif ')) {
@@ -115,7 +115,7 @@ export default class {
   respondWithImage(query, caption) {
     return frinkiacApi.search(query).then(results => {
       return results.map(result => {
-        let photoUrl = caption ? frinkiacApi.memeUrlFor(result, splitCaption(caption)) : frinkiacApi.urlFor(result);
+        let photoUrl = caption ? frinkiacApi.memeUrlFor(result, caption) : frinkiacApi.urlFor(result);
 
         return {
           type: 'photo',
