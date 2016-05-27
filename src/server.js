@@ -11,15 +11,10 @@ class App {
   }
 
   waitForNextResponse() {
-    rollbar.reportMessage('Waiting for next response...', 'debug');
+    console.log('Waiting for next response...');
 
     telegramClient.getUpdates().then(messages => {
-      rollbar.reportMessageWithPayloadData(`Responding to updates`, {
-        level: 'debug',
-        custom: {
-          updatesCount: messages.length
-        }
-      });
+      console.log(`Responding to ${messages.length} updates`);
 
       messages.forEach(message => bot.respondTo(message));
       this.waitForNextResponse();

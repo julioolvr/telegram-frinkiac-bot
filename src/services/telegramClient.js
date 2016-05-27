@@ -35,22 +35,12 @@ export default class {
       options.offset = this.lastOffset + 1;
     }
 
-    rollbar.reportMessageWithPayloadData(`TelegramClient#getUpdates, url: ${this.baseUrl}/getUpdates`, {
-      level: 'debug',
-      custom: {
-        offset: options.offset
-      }
-    });
+    console.log(`TelegramClient#getUpdates, url: ${this.baseUrl}/getUpdates, offset: ${options.offset}`);
 
     return got.get(`${this.baseUrl}/getUpdates`, { query: options })
       .then(response => JSON.parse(response.body).result)
       .then(updates => {
-        rollbar.reportMessageWithPayloadData('Got updates from Telegram', {
-          level: 'debug',
-          custom: {
-            updatesCount: updates.length
-          }
-        });
+        console.log(`Got updates ${updates.length} from Telegram`);
 
         if (updates.length === 0) {
           return [];
@@ -78,7 +68,8 @@ export default class {
    * @return {Promise}        A promise for the response from the API.
    */
   answerInlineQuery(queryId, results) {
-    rollbar.reportMessage(`TelegramClient#answerInlineQuery, id: ${queryId}`, 'debug');
+    console.log(`TelegramClient#answerInlineQuery, id: ${queryId}`);
+
     return got.post(`${this.baseUrl}/answerInlineQuery`, {
       headers: {
         'Content-Type': 'application/json'
