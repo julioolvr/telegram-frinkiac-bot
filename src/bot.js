@@ -1,6 +1,7 @@
 import TelegramClient from './services/telegramClient';
 import FrinkiacApi from './services/frinkiacApi';
 import Bluebird from 'bluebird';
+import rollbar from 'rollbar';
 
 const frinkiacApi = new FrinkiacApi();
 const SCREENSHOT_HEIGHT = 480;
@@ -24,6 +25,10 @@ function gifId(gifResult) {
  * @return {string}         The caption splitted into several lines.
  */
 function splitCaption(caption) {
+  if (!caption) {
+    return;
+  }
+
   if (caption.includes('\n')) {
     // The user separated the caption into several lines on purpose, let's respect that.
     return caption;
@@ -141,6 +146,12 @@ export default class {
           gif_height: GIF_HEIGHT
         };
       });
-    }).catch(error => console.error('Error responding with gif', error));
+    }).catch(error => {
+      rollbar.reportMessage('Error responding with gif', {
+        custom: {
+          message: error
+        }
+      });
+    });
   }
 }

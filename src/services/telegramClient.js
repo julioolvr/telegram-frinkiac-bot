@@ -1,4 +1,5 @@
 import got from 'got';
+import rollbar from 'rollbar';
 
 /**
  * @class Client to communicate with Telegram's API.
@@ -34,10 +35,23 @@ export default class {
       options.offset = this.lastOffset + 1;
     }
 
-    console.log(`TelegramClient#getUpdates, offset: ${options.offset}, url: ${this.baseUrl}/getUpdates`);
+    rollbar.reportMessageWithPayloadData(`TelegramClient#getUpdates, url: ${this.baseUrl}/getUpdates`, {
+      level: 'debug',
+      custom: {
+        offset: options.offset
+      }
+    });
+
     return got.get(`${this.baseUrl}/getUpdates`, { query: options })
       .then(response => JSON.parse(response.body).result)
       .then(updates => {
+        rollbar.reportMessageWithPayloadData('Got updates from Telegram', {
+          level: 'debug',
+          custom: {
+            updatesCount: updates.length
+          }
+        });
+
         if (updates.length === 0) {
           return [];
         }
@@ -47,7 +61,12 @@ export default class {
         return updates;
       })
       .catch(error => {
-        console.error(`Error while trying to get updates: ${error}`);
+        rollbar.reportMessageWithPayloadData('Error while trying to get updates', {
+          custom: {
+            message: error.toString()
+          }
+        });
+
         return [];
       });
   }
@@ -59,7 +78,7 @@ export default class {
    * @return {Promise}        A promise for the response from the API.
    */
   answerInlineQuery(queryId, results) {
-    console.log(`TelegramClient#answerInlineQuery, id: ${queryId}`);
+    rollbar.reportMessage(`TelegramClient#answerInlineQuery, id: ${queryId}`, 'debug');
     return got.post(`${this.baseUrl}/answerInlineQuery`, {
       headers: {
         'Content-Type': 'application/json'
@@ -68,6 +87,12 @@ export default class {
         inline_query_id: queryId,
         results: results
       })
-    }).catch(error => console.log('Error answering inline query', error.response.body));
+    }).catch(error => {
+      rollbar.reportMessageWithPayloadData('Error answering inline query', {
+        custom: {
+          body: error.response.body
+        }
+      });
+    });
   }
 }

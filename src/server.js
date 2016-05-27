@@ -1,5 +1,6 @@
 import Bot from './bot';
 import TelegramClient from './services/telegramClient';
+import rollbar from 'rollbar';
 
 const bot = new Bot();
 const telegramClient = new TelegramClient(process.env.BOT_TOKEN);
@@ -10,11 +11,24 @@ class App {
   }
 
   waitForNextResponse() {
-    console.log('Waiting for next response...');
+    rollbar.reportMessage('Waiting for next response...', 'debug');
+
     telegramClient.getUpdates().then(messages => {
-      console.log(`Responding to ${messages.length} updates`);
+      rollbar.reportMessageWithPayloadData(`Responding to updates`, {
+        level: 'debug',
+        custom: {
+          updatesCount: messages.length
+        }
+      });
+
       messages.forEach(message => bot.respondTo(message));
       this.waitForNextResponse();
+    }).catch(error => {
+      rollbar.reportMessageWithPayloadData('Error getting updates', {
+        custom: {
+          message: error.toString()
+        }
+      });
     });
   }
 }

@@ -2,6 +2,7 @@ import got from 'got';
 import btoa from 'btoa';
 import Bluebird from 'bluebird';
 import _ from 'lodash';
+import rollbar from 'rollbar';
 
 export default class {
   constructor() {
@@ -12,7 +13,13 @@ export default class {
     return got(url)
       .then(response => response.body)
       .then(JSON.parse)
-      .catch(error => console.error('Error in request to Frinkiac API', error.response.body));
+      .catch(error => {
+        rollbar.reportMessageWithPayloadData('Error in request to Frinkiac API', {
+          custom: {
+            body: error.response.body
+          }
+        });
+      });
   }
 
   search(query) {
