@@ -10,7 +10,9 @@ class App {
   }
 
   waitForNextResponse() {
+    console.log('Waiting for next response...');
     telegramClient.getUpdates().then(messages => {
+      console.log(`Responding to ${messages.length} updates`);
       messages.forEach(message => bot.respondTo(message));
       this.waitForNextResponse();
     });
