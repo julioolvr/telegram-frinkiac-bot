@@ -16,13 +16,16 @@ class App {
     telegramClient.getUpdates().then(messages => {
       console.log(`Responding to ${messages.length} updates`);
       messages.forEach(message => bot.respondTo(message));
+      this.waitForNextResponse()
     }).catch(error => {
       rollbar.reportMessageWithPayloadData('Error getting updates', {
         custom: {
           message: error.toString()
         }
       });
-    }).finally(() => this.waitForNextResponse());
+
+      this.waitForNextResponse()
+    });
   }
 }
 
