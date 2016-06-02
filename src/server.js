@@ -22,9 +22,7 @@ class App {
           message: error.toString()
         }
       });
-    });
-
-    this.waitForNextResponse();
+    }).finally(() => this.waitForNextResponse());
   }
 }
 
