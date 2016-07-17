@@ -28,7 +28,7 @@
         "es6": true,
         "node": true
     },
-    "ecmaFeatures": {
-        "modules": true
+    "parserOptions": {
+        "sourceType": "module"
     }
 }

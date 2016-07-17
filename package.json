@@ -17,6 +17,7 @@
     "dotenv": "^1.2.0",
     "got": "^6.1.1",
     "lodash": "^4.12.0",
+    "node-telegram-bot-api": "^0.23.3",
     "rollbar": "^0.6.1"
   },
   "devDependencies": {

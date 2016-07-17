@@ -1,30 +1,18 @@
 import Bot from './bot';
-import TelegramClient from './services/telegramClient';
+import TelegramClient from 'node-telegram-bot-api';
 import rollbar from 'rollbar';
-
-const bot = new Bot();
-const telegramClient = new TelegramClient(process.env.BOT_TOKEN);
 
 class App {
   start() {
-    this.waitForNextResponse();
-  }
+    const telegramClient = new TelegramClient(process.env.BOT_TOKEN, { polling: true });
+    const bot = new Bot(telegramClient);
 
-  waitForNextResponse() {
-    console.log('Waiting for next response...');
+    telegramClient.on('message', message => {
+      bot.respondToMessage(message);
+    });
 
-    telegramClient.getUpdates().then(messages => {
-      console.log(`Responding to ${messages.length} updates`);
-      messages.forEach(message => bot.respondTo(message));
-      this.waitForNextResponse()
-    }).catch(error => {
-      rollbar.reportMessageWithPayloadData('Error getting updates', {
-        custom: {
-          message: error.toString()
-        }
-      });
-
-      this.waitForNextResponse()
+    telegramClient.on('inline_query', message => {
+      bot.respondToInlineQuery(message);
     });
   }
 }

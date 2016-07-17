@@ -1,4 +1,4 @@
-import TelegramClient from './services/telegramClient';
+import TelegramClient from 'node-telegram-bot-api';
 import FrinkiacApi from './services/frinkiacApi';
 import Bluebird from 'bluebird';
 import rollbar from 'rollbar';
@@ -56,16 +56,8 @@ function splitCaption(caption) {
  * @class Bot to respond to messages from Telegram users.
  */
 export default class {
-  constructor({ client = new TelegramClient(process.env.BOT_TOKEN) } = {}) {
+  constructor(client) {
     this.client = client;
-  }
-
-  respondTo(update) {
-    if (update.message) {
-      this.respondToMessage(update.message);
-    } else if (update.inline_query) {
-      this.respondToInlineQuery(update.inline_query);
-    }
   }
 
   respondToMessage(message) {
@@ -75,9 +67,9 @@ export default class {
 
     if (message.text.startsWith('/start')) {
       const startMessage = 'Use this bot inline to search a Simpson screenshot on frinkiac.com.\n' +
-                          'For example: @FrinkiacSearchBot d\'oh';
+                           'For example: @FrinkiacSearchBot d\'oh';
 
-      this.client.sendText(startMessage, message.chat.id);
+      this.client.sendMessage(message.chat.id, startMessage);
     }
 
     if (message.text.startsWith('/help')) {
@@ -92,7 +84,7 @@ export default class {
                           'You can send gifs by adding "gif" as the first word of your query. After that use it as always, ' +
                           'you can even add a caption for the gif. For instance "@FrinkiacSearchBot gif drugs lisa"';
 
-      this.client.sendText(helpMessage, message.chat.id);
+      this.client.sendMessage(message.chat.id, helpMessage);
     }
   }
 
