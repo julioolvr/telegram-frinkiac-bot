@@ -4,10 +4,10 @@ import Bluebird from 'bluebird';
 import rollbar from 'rollbar';
 
 const frinkiacApi = new FrinkiacApi();
-const SCREENSHOT_HEIGHT = 480;
-const SCREENSHOT_WIDTH = 640;
+const SCREENSHOT_HEIGHT = process.env.FORMAT === 'HD' ? 1080 : 480;
+const SCREENSHOT_WIDTH = process.env.FORMAT === 'HD' ? 1920 : 640;
 const GIF_WIDTH = 480;
-const GIF_HEIGHT = 360;
+const GIF_HEIGHT = process.env.FORMAT === 'HD' ? 270 : 360;
 const MAX_RESULTS = 50;
 const EM_WIDTH = 15; // Amount of M letters that fit in a single line.
 
