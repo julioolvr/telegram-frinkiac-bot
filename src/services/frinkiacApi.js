@@ -6,7 +6,7 @@ import rollbar from 'rollbar';
 
 export default class {
   constructor() {
-    this.baseUrl = 'https://frinkiac.com';
+    this.baseUrl = process.env.BASE_URL;
   }
 
   requestUrl(url) {
