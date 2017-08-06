@@ -3,10 +3,11 @@ import btoa from 'btoa';
 import Bluebird from 'bluebird';
 import _ from 'lodash';
 import rollbar from 'rollbar';
+import config from '../config';
 
 export default class {
   constructor() {
-    this.baseUrl = process.env.BASE_URL;
+    this.baseUrl = config.baseUrl;
   }
 
   requestUrl(url) {

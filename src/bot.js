@@ -2,12 +2,13 @@ import TelegramClient from 'node-telegram-bot-api';
 import FrinkiacApi from './services/frinkiacApi';
 import Bluebird from 'bluebird';
 import rollbar from 'rollbar';
+import config from './config';
 
 const frinkiacApi = new FrinkiacApi();
-const SCREENSHOT_HEIGHT = process.env.FORMAT === 'HD' ? 1080 : 480;
-const SCREENSHOT_WIDTH = process.env.FORMAT === 'HD' ? 1920 : 640;
-const GIF_WIDTH = 480;
-const GIF_HEIGHT = process.env.FORMAT === 'HD' ? 270 : 360;
+const SCREENSHOT_HEIGHT = config.screenshotHeight;
+const SCREENSHOT_WIDTH = config.screenshotWidth;
+const GIF_WIDTH = config.gifWidth;
+const GIF_HEIGHT = config.gifHeight;
 const MAX_RESULTS = 50;
 const EM_WIDTH = 15; // Amount of M letters that fit in a single line.
 
@@ -66,23 +67,13 @@ export default class {
     }
 
     if (message.text.startsWith('/start')) {
-      const startMessage = 'Use this bot inline to search a Simpson screenshot on frinkiac.com.\n' +
-                           'For example: @FrinkiacSearchBot d\'oh';
+      const startMessage = config.messages.start;
 
       this.client.sendMessage(message.chat.id, startMessage);
     }
 
     if (message.text.startsWith('/help')) {
-      const helpMessage = 'This is an inline bot. This means that you can use it on any chat, private or group, without ' +
-                          'inviting it. Just type "@FrinkiacSearchBot <your search>" and wait. The bot will show you some ' +
-                          'screenshots matching your query, and you can select one of them. Try it here! Just make sure to ' +
-                          'add "@FrinkiacSearchBot" at the beginning of your message.\n\n' +
-                          'You can generate "meme" images by adding your own subtitle to the image. To do this, write your ' +
-                          'search query, and the text you want separated by a slash (/). For instance, "@FrinkiacSearchBot ' +
-                          'drugs lisa / give me the drugs, lisa" and then pick one of the thumbnails. The image will be ' +
-                          'generated with your text.\n\n' +
-                          'You can send gifs by adding "gif" as the first word of your query. After that use it as always, ' +
-                          'you can even add a caption for the gif. For instance "@FrinkiacSearchBot gif drugs lisa"';
+      const helpMessage = config.messages.help;
 
       this.client.sendMessage(message.chat.id, helpMessage);
     }
